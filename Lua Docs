@@ -1,0 +1,303 @@
+# Skript Proxy — Lua API Reference
+
+> Full documentation for the Lua scripting API exposed by **Skript Proxy**.  
+> Scripts live in the `scripts/` folder and are auto-loaded at startup.  
+> You can also execute code live from the **Lua Executor** tab in the GUI.
+
+---
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Logging](#logging)
+- [Networking / Packets](#networking--packets)
+- [Player](#player)
+- [World](#world)
+- [Items & Inventory](#items--inventory)
+- [Utility](#utility)
+- [Events (Hooks)](#events-hooks)
+- [Examples](#examples)
+- [Notes](#notes)
+
+---
+
+## Getting Started
+
+Place `.lua` files in the `scripts/` directory next to the proxy executable. They are loaded automatically on startup in alphabetical order.
+
+```lua
+-- scripts/hello.lua
+log("Proxy loaded! Hello from Lua.")
+```
+
+You can also run code live from the **Lua Executor** tab in the GUI without restarting.
+
+---
+
+## Logging
+
+### `log(message)`
+
+Prints a message to the proxy log (visible in the **Debugger** tab and the console).
+
+| Parameter | Type   | Description        |
+|-----------|--------|--------------------|
+| `message` | string | Text to log        |
+
+```lua
+log("Hello, world!")
+log("Player pos: " .. tostring(x) .. ", " .. tostring(y))
+```
+
+---
+
+## Networking / Packets
+
+### `SendPacket(type, data)`
+
+Sends a raw game packet **to the Growtopia server** (from the client side).
+
+| Parameter | Type   | Description                           |
+|-----------|--------|---------------------------------------|
+| `type`    | int    | Packet type (e.g. `2` = generic text) |
+| `data`    | string | Raw packet payload string             |
+
+```lua
+-- Send a chat message
+SendPacket(2, "action|input\ntext|Hello world!")
+
+-- Drop an item
+SendPacket(2, "action|drop\nitemID|242|")
+
+-- Warp to a world
+SendPacket(2, "action|join_request\nname|START\ninvitedWorld|0")
+```
+
+Common packet types:
+
+| Type | Meaning              |
+|------|----------------------|
+| `2`  | Generic text packet  |
+| `3`  | Game update packet   |
+
+---
+
+## Player
+
+### `GetPlayerPos()`
+
+Returns the local player's current tile position.
+
+**Returns:** `x (number), y (number)`
+
+```lua
+local x, y = GetPlayerPos()
+log("I am at: " .. x .. ", " .. y)
+```
+
+---
+
+## World
+
+### `get_world_tiles()`
+
+Returns an array of all tiles in the current world (100×60 = 6000 tiles).
+
+**Returns:** `table` — array of tile objects
+
+Each tile object has:
+
+| Field | Type | Description           |
+|-------|------|-----------------------|
+| `fg`  | int  | Foreground block item ID |
+| `bg`  | int  | Background block item ID |
+
+```lua
+local tiles = get_world_tiles()
+local count = 0
+for _, tile in ipairs(tiles) do
+    if tile.fg == 8 then  -- 8 = Bedrock
+        count = count + 1
+    end
+end
+log("Bedrock tiles: " .. count)
+```
+
+---
+
+## Items & Inventory
+
+### `get_dropped_items()`
+
+Returns all items currently dropped/floating in the world.
+
+**Returns:** `table` — array of item objects
+
+Each item object has:
+
+| Field    | Type   | Description           |
+|----------|--------|-----------------------|
+| `id`     | int    | Item ID               |
+| `x`      | number | World X position      |
+| `y`      | number | World Y position      |
+| `amount` | int    | Stack count           |
+
+```lua
+local items = get_dropped_items()
+for _, item in ipairs(items) do
+    log("Item " .. item.id .. " x" .. item.amount .. " at (" .. item.x .. "," .. item.y .. ")")
+end
+```
+
+### `GetWorldObject()`
+
+Returns floating world objects (same data source as `get_dropped_items` with UID field included).
+
+**Returns:** `table` — array of object entries
+
+Each entry has:
+
+| Field    | Type   | Description      |
+|----------|--------|------------------|
+| `id`     | int    | Item ID          |
+| `x`      | number | X position       |
+| `y`      | number | Y position       |
+| `amount` | int    | Stack count      |
+| `uid`    | int    | Unique object ID |
+
+```lua
+local objects = GetWorldObject()
+for _, obj in ipairs(objects) do
+    log("UID=" .. obj.uid .. " Item=" .. obj.id)
+end
+```
+
+---
+
+## Utility
+
+### `Sleep(ms)`
+
+Pauses script execution for the given number of milliseconds.  
+> ⚠️ Runs on the Lua thread — do not use in the GUI executor for long sleeps.
+
+| Parameter | Type | Description              |
+|-----------|------|--------------------------|
+| `ms`      | int  | Milliseconds to sleep    |
+
+```lua
+log("Waiting 1 second...")
+Sleep(1000)
+log("Done!")
+```
+
+---
+
+## Events (Hooks)
+
+> These are callback functions you define in your script. The proxy calls them automatically when the matching event occurs.
+
+### `OnConsoleMessage(message)`
+
+Called when a console/game message event fires (via the `OnConsoleMessage` C++ callback).
+
+```lua
+function OnConsoleMessage(msg)
+    log("Console: " .. msg)
+end
+```
+
+> Register it via C++ callback binding. The proxy calls `s_console_message_callback` which routes to this function if registered.
+
+---
+
+## Examples
+
+### Scan all floating items and count by ID
+
+```lua
+function scan_floating_items()
+    local items = get_dropped_items()
+    local counts = {}
+    for _, item in ipairs(items) do
+        counts[item.id] = (counts[item.id] or 0) + item.amount
+    end
+    for id, count in pairs(counts) do
+        log("Item " .. id .. ": " .. count)
+    end
+end
+
+scan_floating_items()
+```
+
+### Auto-drop World Locks
+
+```lua
+-- Drop 50 World Locks (item ID 242)
+SendPacket(2, "action|drop\nitemID|242|")
+Sleep(150)
+SendPacket(2, "action|dialog_return\ndialog_name|drop_item\nitemID|242|\ncount|50|\nbuttonClicked|yes")
+log("Dropped 50 WLs")
+```
+
+### Warp to a world
+
+```lua
+local world = "BUYWORLD"
+SendPacket(2, "action|join_request\nname|" .. world .. "\ninvitedWorld|0")
+log("Warping to " .. world)
+```
+
+### Print player position every 2 seconds
+
+```lua
+for i = 1, 5 do
+    local x, y = GetPlayerPos()
+    log("[" .. i .. "] Position: " .. x .. ", " .. y)
+    Sleep(2000)
+end
+```
+
+### Check if a specific tile exists in the world
+
+```lua
+local LAVA_ID = 214
+local tiles = get_world_tiles()
+local found = false
+for i, tile in ipairs(tiles) do
+    if tile.fg == LAVA_ID then
+        found = true
+        log("Lava found at tile index " .. i)
+        break
+    end
+end
+if not found then log("No lava in this world.") end
+```
+
+---
+
+## Item ID Reference (Common)
+
+| Item ID | Name              |
+|---------|-------------------|
+| 2       | Dirt              |
+| 8       | Bedrock           |
+| 242     | World Lock        |
+| 1796    | Diamond Lock      |
+| 7188    | Blue Gem Lock     |
+| 18      | Cave Background   |
+| 204     | Wooden Door       |
+
+---
+
+## Notes
+
+- Scripts in `scripts/` are loaded **once** at startup. Edit + restart to reload from file.
+- The **Lua Executor** tab runs code live in the same Lua state — variables persist between runs within a session.
+- All `SendPacket` calls go **client → server**. To send to the local game client (server → client direction), this requires C++ extension code.
+- Lua errors are printed to the proxy log and the Lua Executor output panel.
+- The Lua state is shared — functions and globals defined in one script are accessible in others.
+
+---
+
+*Generated for Skript Proxy — Lua API v1.0*
