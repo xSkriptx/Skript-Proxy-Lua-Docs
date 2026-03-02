@@ -4,431 +4,427 @@
 
 | Function | Description |
 |----------|-------------|
-| [SendPacket](#sendpacket) | Send text packet to server |
-| [SendPacketRaw](#sendpacketraw) | Send GamePacket to server |
-| [SendPacketRawClient](#sendpacketrawclient) | Send GamePacket to client |
-| [SendVarlist](#sendvarlist) | Send varlist to client |
-| [SendPacketToClient](#sendpackettoclient) | Send text packet to client |
-| [SendChat](#sendchat) | Send chat message |
-| [Warp](#warp) | Warp to world |
-| [log](#log) | Log to console |
-| [Sleep](#sleep) | Delay in thread |
-| [RunThread](#runthread) | Run function in new thread |
-| [GetLocal](#getlocal) | Get local player |
-| [GetPlayers](#getplayers) | Get all players |
-| [GetInventory](#getinventory) | Get inventory items |
-| [GetItemCount](#getitemcount) | Get item count by id |
-| [GetIteminfo](#getiteminfo) | Get item info by id |
-| [GetObjects](#getobjects) | Get dropped world objects |
-| [GetTile](#gettile) | Get tile at position |
-| [GetTiles](#gettiles) | Get all world tiles |
-| [GetPlayerPos](#getplayerpos) | Get local player position |
-| [GetPlayerName](#getplayername) | Get local player name |
-| [GetWorldName](#getworldname) | Get current world name |
-| [GetPing](#getping) | Get ping in ms |
-| [MessageBox](#messagebox) | Show dialog to client |
-| [AddCallback](#addcallback) | Register event hook |
-| [RemoveCallback](#removecallback) | Remove callback by name |
-| [RemoveCallbacks](#removecallbacks) | Remove all callbacks |
-| [IsSolid](#issolid) | Check if tile is solid |
+| SendPacket | Send text packet to server |
+| SendPacketRaw | Send GamePacket to server |
+| SendPacketRawClient | Send GamePacket to client |
+| SendVarlist | Send varlist to client |
+| SendPacketToClient | Send text packet to client |
+| SendChat | Send chat message |
+| Warp | Warp to world |
+| log | Log to console |
+| Sleep | Delay in thread |
+| RunThread | Run function in new thread |
+| GetLocal | Get local player |
+| GetPlayers | Get all players |
+| GetInventory | Get inventory items |
+| GetItemCount | Get item count by id |
+| GetIteminfo | Get item info by id |
+| GetObjects | Get dropped world objects |
+| GetTile | Get tile at position |
+| GetTiles | Get all world tiles |
+| GetPlayerPos | Get local player position |
+| GetPlayerName | Get local player name |
+| GetWorldName | Get current world name |
+| GetPing | Get ping in ms |
+| MessageBox | Show dialog to client |
+| AddCallback | Register event hook |
+| RemoveCallback | Remove callback by name |
+| RemoveCallbacks | Remove all callbacks |
+| IsSolid | Check if tile is solid |
 
 ---
 
 ## SendPacket
 
-\`\`\`lua
+```lua
 SendPacket(int type, string packet)
-\`\`\`
+```
 
 Sends a text packet to the GT server. A trailing `\n` is appended automatically if missing.
 
 | Type | Description |
 |------|-------------|
-| `2` | `NET_MESSAGE_GENERIC_TEXT` — use for `action|input`, `action|respawn`, etc. |
-| `3` | `NET_MESSAGE_GAME_MESSAGE` — use for `action|join_request` only |
+| 2 | NET_MESSAGE_GENERIC_TEXT — use for action|input, action|respawn, etc. |
+| 3 | NET_MESSAGE_GAME_MESSAGE — use for action|join_request only |
 
-\`\`\`lua
+```lua
 SendPacket(2, "action|respawn")
 SendPacket(2, "action|input\ntext|hello world")
 SendPacket(3, "action|join_request\nname|START\ninvitedWorld|0")
-\`\`\`
+```
 
 ---
 
 ## SendPacketRaw
 
-\`\`\`lua
+```lua
 SendPacketRaw(GamePacket packet)
-\`\`\`
+```
 
-Sends a [GamePacket](#gamepacket) to the GT server.
+Sends a GamePacket to the GT server.
 
-\`\`\`lua
+```lua
 local packet = {}
 packet.type = 10
-packet.int_data = 48  -- Clothing ID (Jeans)
+packet.int_data = 48
 SendPacketRaw(packet)
-\`\`\`
+```
 
 ---
 
 ## SendPacketRawClient
 
-\`\`\`lua
+```lua
 SendPacketRawClient(GamePacket packet)
-\`\`\`
+```
 
-Sends a [GamePacket](#gamepacket) to the game client (inject server→client).
+Sends a GamePacket to the game client (inject server→client).
 
-\`\`\`lua
+```lua
 local packet = {}
 packet.type = 0
 packet.flags = 48
 SendPacketRawClient(packet)
-\`\`\`
+```
 
 ---
 
 ## SendVarlist
 
-\`\`\`lua
+```lua
 SendVarlist(table varlist)
-\`\`\`
+```
 
 Sends a varlist packet to the game client. `netid` is required.
 
-\`\`\`lua
+```lua
 local var = {}
 var[0] = "OnConsoleMessage"
 var[1] = "Hello!"
 var.netid = -1
 SendVarlist(var)
-\`\`\`
+```
 
 ---
 
 ## SendPacketToClient
 
-\`\`\`lua
+```lua
 SendPacketToClient(int type, string packet)
-\`\`\`
+```
 
 Sends a text packet directly to the game client.
 
-\`\`\`lua
+```lua
 SendPacketToClient(2, "action|log\nmsg|injected")
-\`\`\`
+```
 
 ---
 
 ## SendChat
 
-\`\`\`lua
+```lua
 SendChat(string text)
-\`\`\`
+```
 
-Sends chat through the event system (triggers OnPacket callbacks, honors command hooks).
+Sends chat through the event system.
 
-\`\`\`lua
+```lua
 SendChat("hello world")
 SendChat("/ban badguy")
-\`\`\`
+```
 
 ---
 
 ## Warp
 
-\`\`\`lua
+```lua
 Warp(string world)
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 Warp("START")
-\`\`\`
+```
 
 ---
 
 ## log
 
-\`\`\`lua
+```lua
 log(string message)
-\`\`\`
+```
 
 Logs to the proxy debug console.
 
-\`\`\`lua
+```lua
 log("Hello!")
 log("Ping: " .. tostring(GetPing()))
-\`\`\`
+```
 
 ---
 
 ## Sleep
 
-\`\`\`lua
+```lua
 Sleep(int ms)
-\`\`\`
+```
 
 Pauses the current thread. Only use inside `RunThread`.
 
-\`\`\`lua
+```lua
 RunThread(function()
     log("start")
     Sleep(2000)
     log("2 seconds later")
 end)
-\`\`\`
+```
 
 ---
 
 ## RunThread
 
-\`\`\`lua
+```lua
 RunThread(function)
-\`\`\`
+```
 
-Runs a function in a background thread. Required for loops and Sleep.
+Runs a function in a background thread.
 
-\`\`\`lua
+```lua
 RunThread(function()
     while true do
         SendPacket(2, "action|respawn")
         Sleep(5000)
     end
 end)
-\`\`\`
+```
 
 ---
 
 ## GetLocal
 
-\`\`\`lua
+```lua
 GetLocal() -> NetAvatar
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 local me = GetLocal()
 log(me.name .. " in " .. me.world)
-\`\`\`
+```
 
 ---
 
 ## GetPlayers
 
-\`\`\`lua
+```lua
 GetPlayers() -> table[NetAvatar]
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 for _, p in pairs(GetPlayers()) do
     log(p.name .. " netid=" .. p.netid)
 end
-\`\`\`
+```
 
 ---
 
 ## GetInventory
 
-\`\`\`lua
+```lua
 GetInventory() -> table[InventoryItem]
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 for _, item in pairs(GetInventory()) do
     log("id=" .. item.id .. " count=" .. item.count)
 end
-\`\`\`
+```
 
 ---
 
 ## GetItemCount
 
-\`\`\`lua
+```lua
 GetItemCount(int id) -> int
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 log("Dirt: " .. GetItemCount(2))
-\`\`\`
+```
 
 ---
 
 ## GetIteminfo
 
-\`\`\`lua
+```lua
 GetIteminfo(int id) -> ItemInfo
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 log(GetIteminfo(2).name)
-\`\`\`
+```
 
 ---
 
 ## GetObjects
 
-\`\`\`lua
+```lua
 GetObjects() -> table[WorldObject]
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 for _, obj in pairs(GetObjects()) do
     log("id=" .. obj.id .. " at " .. obj.pos_x .. "," .. obj.pos_y)
 end
-\`\`\`
+```
 
 ---
 
 ## GetTile
 
-\`\`\`lua
+```lua
 GetTile(int x, int y) -> Tile
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 local tile = GetTile(5, 3)
 log("fg=" .. tile.fg)
-\`\`\`
+```
 
 ---
 
 ## GetTiles
 
-\`\`\`lua
+```lua
 GetTiles() -> table[Tile]
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 for _, tile in pairs(GetTiles()) do
     if tile.fg == 2 then
         log("Dirt at " .. tile.pos_x .. "," .. tile.pos_y)
     end
 end
-\`\`\`
+```
 
 ---
 
 ## GetPlayerPos
 
-\`\`\`lua
+```lua
 GetPlayerPos() -> float x, float y
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 local x, y = GetPlayerPos()
 log(x .. ", " .. y)
-\`\`\`
+```
 
 ---
 
 ## GetPlayerName
 
-\`\`\`lua
+```lua
 GetPlayerName() -> string
-\`\`\`
+```
 
 ---
 
 ## GetWorldName
 
-\`\`\`lua
+```lua
 GetWorldName() -> string
-\`\`\`
+```
 
 ---
 
 ## GetPing
 
-\`\`\`lua
+```lua
 GetPing() -> int
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 log("Ping: " .. GetPing() .. "ms")
-\`\`\`
+```
 
 ---
 
 ## MessageBox
 
-\`\`\`lua
+```lua
 MessageBox(string title, string content)
-\`\`\`
+```
 
-\`\`\`lua
+```lua
 MessageBox("Info", "Script loaded!")
-\`\`\`
+```
 
 ---
 
 ## AddCallback
 
-\`\`\`lua
+```lua
 AddCallback(string name, string event, function fn)
-\`\`\`
+```
 
-Registers a callback. Return `true` to cancel the packet.
+Return `true` to cancel the packet.
 
 ### Events
 
 | Event | Args | Direction |
 |-------|------|-----------|
-| `OnVarlist` | `(table varlist, string raw)` | Server → Client |
-| `OnPacket` | `(int type, string packet)` | Client → Server |
-| `OnRawPacket` | `(GamePacket packet)` | Client → Server |
-| `OnIncomingRawPacket` | `(GamePacket packet)` | Server → Client |
+| OnVarlist | (table varlist, string raw) | Server → Client |
+| OnPacket | (int type, string packet) | Client → Server |
+| OnRawPacket | (GamePacket packet) | Client → Server |
+| OnIncomingRawPacket | (GamePacket packet) | Server → Client |
 
-\`\`\`lua
--- Block all dialogs
+```lua
 AddCallback("blockdlg", "OnVarlist", function(varlist, raw)
     if varlist[0] and varlist[0]:find("OnDialogRequest") then
         return true
     end
 end)
 
--- Log outgoing chat
 AddCallback("logchat", "OnPacket", function(type, packet)
     if packet:find("action|input") then
         log("OUT: " .. packet)
     end
 end)
 
--- Block own state packet
 AddCallback("nostate", "OnRawPacket", function(packet)
     if packet.type == 0 then return true end
 end)
 
--- Log incoming state
 AddCallback("logstate", "OnIncomingRawPacket", function(packet)
     if packet.type == 0 then
         log("State netid=" .. packet.netid .. " flags=" .. packet.flags)
     end
 end)
-\`\`\`
+```
 
 ---
 
 ## RemoveCallback
 
-\`\`\`lua
+```lua
 RemoveCallback(string name)
-\`\`\`
+```
 
 ---
 
 ## RemoveCallbacks
 
-\`\`\`lua
+```lua
 RemoveCallbacks()
-\`\`\`
+```
 
 ---
 
 ## IsSolid
 
-\`\`\`lua
+```lua
 IsSolid(int x, int y) -> bool
-\`\`\`
+```
 
 ---
 
@@ -436,80 +432,80 @@ IsSolid(int x, int y) -> bool
 
 ## NetAvatar
 
-| Type | Field | Description |
-|------|-------|-------------|
-| string | `name` | Player name |
-| string | `world` | Current world (local only) |
-| string | `country` | Country/flag ID |
-| float | `pos_x` | X pixel position |
-| float | `pos_y` | Y pixel position |
-| int | `tile_x` | X tile position |
-| int | `tile_y` | Y tile position |
-| int | `netid` | Net ID |
-| int | `userid` | User ID |
-| int | `gems` | Gem count |
-| bool | `facing_left` | Facing left |
-| int | `flags` | Player flags |
+| Type | Field |
+|------|-------|
+| string | name |
+| string | world |
+| string | country |
+| float | pos_x |
+| float | pos_y |
+| int | tile_x |
+| int | tile_y |
+| int | netid |
+| int | userid |
+| int | gems |
+| bool | facing_left |
+| int | flags |
 
 ## WorldObject
 
-| Type | Field | Description |
-|------|-------|-------------|
-| int | `id` | Item ID |
-| int | `oid` | Object index |
-| float | `pos_x` | X pixel position |
-| float | `pos_y` | Y pixel position |
-| int | `count` | Item count |
-| int | `flags` | Object flags |
+| Type | Field |
+|------|-------|
+| int | id |
+| int | oid |
+| float | pos_x |
+| float | pos_y |
+| int | count |
+| int | flags |
 
 ## InventoryItem
 
-| Type | Field | Description |
-|------|-------|-------------|
-| int | `id` | Item ID |
-| int | `count` | Item count |
+| Type | Field |
+|------|-------|
+| int | id |
+| int | count |
 
 ## Tile
 
-| Type | Field | Description |
-|------|-------|-------------|
-| int | `fg` | Foreground block ID |
-| int | `bg` | Background block ID |
-| int | `pos_x` | Tile X position |
-| int | `pos_y` | Tile Y position |
-| int | `flags` | Tile flags |
-| bool | `water` | Has water |
-| bool | `fire` | On fire |
-| bool | `ready` | Ready to harvest |
+| Type | Field |
+|------|-------|
+| int | fg |
+| int | bg |
+| int | pos_x |
+| int | pos_y |
+| int | flags |
+| bool | water |
+| bool | fire |
+| bool | ready |
 
 ## GamePacket
 
-| Type | Field | Description |
-|------|-------|-------------|
-| int | `type` | Packet type |
-| int | `netid` | Net ID |
-| int | `flags` | Packet flags |
-| int | `int_data` | Data size / generic int |
-| int | `decompressed_size` | Decompressed data size |
+| Type | Field |
+|------|-------|
+| int | type |
+| int | netid |
+| int | flags |
+| int | int_data |
+| int | decompressed_size |
 
-## VariantList (OnVarlist table)
+## VariantList
 
-| Type | Field | Description |
-|------|-------|-------------|
-| int | `netid` | Net ID |
-| string | `[0]` | Function name |
-| any | `[1]` | Param 1 |
-| any | `[2]` | Param 2 |
-| any | `[3]` | Param 3 |
-| any | `[4]` | Param 4 |
-| any | `[5]` | Param 5 |
+| Type | Field |
+|------|-------|
+| int | netid |
+| string | [0] |
+| any | [1] |
+| any | [2] |
+| any | [3] |
+| any | [4] |
+| any | [5] |
 
 ## ItemInfo
 
-| Type | Field | Description |
-|------|-------|-------------|
-| string | `name` | Item name |
-| int | `item_type` | Item type |
-| int | `growth` | Growth time |
-| int | `rarity` | Rarity |
-| int | `size` | List size |
+| Type | Field |
+|------|-------|
+| string | name |
+| int | item_type |
+| int | growth |
+| int | rarity |
+| int | size |
