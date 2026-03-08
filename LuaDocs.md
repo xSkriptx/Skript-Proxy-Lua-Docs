@@ -31,6 +31,8 @@
 | RemoveCallback | Remove callback by name |
 | RemoveCallbacks | Remove all callbacks |
 | IsSolid | Check if tile is solid |
+| Collect | Collect item by ID |
+| FindPath | Find path and walk to (x, y) |
 
 ---
 
@@ -424,6 +426,36 @@ RemoveCallbacks()
 
 ```lua
 IsSolid(int x, int y) -> bool
+```
+
+---
+
+## Collect
+
+```lua
+Collect(int id) -> int
+```
+
+Attempts to collect all dropped items with the given ID in the current world. Returns the number of item types targeted.
+
+```lua
+-- Collect all World Locks (242)
+Collect(242)
+```
+
+---
+
+## FindPath
+
+```lua
+FindPath(int x, int y) -> int
+```
+
+Calculates a path to the given tile coordinates using A* and walks there. Returns the number of steps taken, or -1 on failure.
+
+```lua
+-- Walk to (50, 25)
+FindPath(50, 25)
 ```
 
 ---
